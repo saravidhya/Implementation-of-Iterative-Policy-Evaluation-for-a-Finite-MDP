@@ -100,34 +100,70 @@ Where:
 
 ```python
 
+import gymnasium as gym
+import numpy as np
+# Create FrozenLake environment
+env = gym.make("FrozenLake-v1", map_name="4x4", is_slippery=True)
+# Access the unwrapped environment to use the transition model
+env = env.unwrapped
+# Number of states and actions
+n_states = env.observation_space.n
+n_actions = env.action_space.n
+     
+# Parameters
+gamma = 0.99
+theta = 1e-8
+# Random policy: each action has equal probability
+policy = np.ones((n_states, n_actions)) / n_actions
+def policy_evaluation(env, policy, gamma=0.99, theta=1e-8):
+    n_states = env.observation_space.n
+    V = np.zeros(n_states)
+    iterations = 0
+    
+    while True:
+        delta = 0
+        iterations += 1
+        for s in range(n_states):
+            v = V[s]
+            new_value = 0
+            for a in range(env.action_space.n):
+                prob_a = policy[s][a]
+                for prob, next_state, reward, done in env.P[s][a]:
+                    new_value += prob_a * prob * (reward + gamma * V[next_state])
+            V[s] = new_value
+            delta = max(delta, abs(v - V[s]))
+        
+        if delta < theta:
+            break
+            
+    return V, iterations
 
-# -------------------------------------------------
-# Policy Evaluation Function
-# -------------------------------------------------
+V, iterations = policy_evaluation(env, policy, gamma, theta)
 
+V, iterations = policy_evaluation(env, policy, gamma, theta)
 
-# -------------------------------------------------
-# Display Output
-# -------------------------------------------------
+print("Name: VIDHIYA LAKSHMI S ")
+print("Register Number: 212223230238   ")
+print("Number of iterations:", iterations)
+print("\nState-Value Function:")
+print(V)
 
-# Change the parameters and observe the results
+print("Name: VIDHIYA LAKSHMI S")
+print("Register Number: 212223230238")
+print("\nState-Value Function as 4x4 Grid:")
+print(np.round(V.reshape(4, 4), 4))
 
+env.close()
 ```
-
----
 
 ## Output
 
-```text
+## Gamma = 0.99
+<img width="688" height="380" alt="image" src="https://github.com/user-attachments/assets/2d47719c-828a-4317-ac63-ef53ff1a83df" />
 
-Number of Iterations: 
+## Gamma = 0.9
+<img width="705" height="377" alt="image" src="https://github.com/user-attachments/assets/44ec9279-9eaf-41fb-ae88-ecef34039032" />
 
-State-Value Function as 4x4 Grid:
-
-
-
-```
----
 
 ## Result
 
@@ -137,15 +173,33 @@ Iterative policy evaluation was implemented successfully using the Gymnasium Fro
 
 ## Inference
 
-```text
+~~~
 
 
+1. Importing Libraries: The program imports `gymnasium` to create the FrozenLake environment and `numpy` to perform numerical calculations and arrange state values in a matrix.
 
-```
+2. Creating the Environment: The `gym.make()` function creates a 4 × 4 FrozenLake environment with `is_slippery=True`. The agent can move left, right, up or down, but its movement may differ from the intended direction.
 
+3. Defining Parameters: The program sets `gamma = 0.99` as the discount factor and `theta = 1e-8` as the convergence threshold. These parameters determine the importance of future rewards and when the algorithm should stop.
 
+4. Initializing the Random Policy: The statement `policy = np.ones((n_states, n_actions)) / n_actions` creates a policy in which each of the four actions has an equal probability of 25% in every state.
 
+5. Initializing State Values: The `np.zeros(n_states)` function initializes the values of all 16 states to zero. The iteration counter is also initialized to zero.
 
----
+6. Evaluating Each State: The `while True` loop repeatedly visits all states. For each state, the program stores its old value and calculates a new value based on the possible actions and transitions.
+
+7. Calculating Expected Rewards: The program uses the Bellman expectation equation to calculate each state's value by considering the action probability, transition probability, immediate reward, discount factor and next-state value.
+
+8. Updating State Values: The newly calculated value replaces the old value of each state. The variable `delta` stores the maximum difference between the old and new values during an iteration.
+
+9. Checking Convergence: The algorithm compares `delta` with `theta`. If `delta` becomes smaller than `theta`, the loop stops because the state values have sufficiently converged.
+
+10. Displaying Results: The program prints the number of iterations and the final state-value function. It then uses `reshape(4, 4)` to display the values as a grid and `np.round()` to round them to four decimal places.
+
+11. Interpreting the Output: The algorithm converges after 54 iterations. Hole states and the terminal goal state have zero values, while other states have positive values depending on their expected discounted future rewards under the random policy.
+
+12. Closing the Environment: The `env.close()` statement closes the FrozenLake environment after the calculations are complete.
+
+~~~
 
 
